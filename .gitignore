@@ -1,0 +1,30 @@
+# SRD PDF — not redistributable
+SRD_CC_v5.2.1.pdf
+
+# Parser output — generated from the PDF, not committed
+output/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+
+# Virtual environments
+venv/
+.venv/
+env/
+.env/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~

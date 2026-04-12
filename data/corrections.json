@@ -1,0 +1,17 @@
+{
+  "_comment": "Manual corrections for known PDF rendering artifacts and SRD typos that cannot be fixed by inference alone. Applied in build_monster() after all parsers run.",
+
+  "ability_scores": {
+    "Young White Dragon": {
+      "int": {
+        "_saving_throw_raw_override": -2
+      }
+    }
+  },
+
+  "skills": {
+    "_comment": "skill values that don't match mod+pb or mod+2pb — treated as proficient with the SRD anomaly noted in srd_bugs.md",
+    "Giant Frog":      {"stealth": "proficient"},
+    "Shambling Mound": {"stealth": "proficient"}
+  }
+}

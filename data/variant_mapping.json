@@ -1,0 +1,73 @@
+{
+  "_comment": "Maps monster name → base creature name. Used to populate the variant_of field in monsters.json.",
+
+  "Black Dragon Wyrmling":   "Black Dragon",
+  "Young Black Dragon":      "Black Dragon",
+  "Adult Black Dragon":      "Black Dragon",
+  "Ancient Black Dragon":    "Black Dragon",
+
+  "Blue Dragon Wyrmling":    "Blue Dragon",
+  "Young Blue Dragon":       "Blue Dragon",
+  "Adult Blue Dragon":       "Blue Dragon",
+  "Ancient Blue Dragon":     "Blue Dragon",
+
+  "Brass Dragon Wyrmling":   "Brass Dragon",
+  "Young Brass Dragon":      "Brass Dragon",
+  "Adult Brass Dragon":      "Brass Dragon",
+  "Ancient Brass Dragon":    "Brass Dragon",
+
+  "Bronze Dragon Wyrmling":  "Bronze Dragon",
+  "Young Bronze Dragon":     "Bronze Dragon",
+  "Adult Bronze Dragon":     "Bronze Dragon",
+  "Ancient Bronze Dragon":   "Bronze Dragon",
+
+  "Copper Dragon Wyrmling":  "Copper Dragon",
+  "Young Copper Dragon":     "Copper Dragon",
+  "Adult Copper Dragon":     "Copper Dragon",
+  "Ancient Copper Dragon":   "Copper Dragon",
+
+  "Gold Dragon Wyrmling":    "Gold Dragon",
+  "Young Gold Dragon":       "Gold Dragon",
+  "Adult Gold Dragon":       "Gold Dragon",
+  "Ancient Gold Dragon":     "Gold Dragon",
+
+  "Green Dragon Wyrmling":   "Green Dragon",
+  "Young Green Dragon":      "Green Dragon",
+  "Adult Green Dragon":      "Green Dragon",
+  "Ancient Green Dragon":    "Green Dragon",
+
+  "Red Dragon Wyrmling":     "Red Dragon",
+  "Young Red Dragon":        "Red Dragon",
+  "Adult Red Dragon":        "Red Dragon",
+  "Ancient Red Dragon":      "Red Dragon",
+
+  "Silver Dragon Wyrmling":  "Silver Dragon",
+  "Young Silver Dragon":     "Silver Dragon",
+  "Adult Silver Dragon":     "Silver Dragon",
+  "Ancient Silver Dragon":   "Silver Dragon",
+
+  "White Dragon Wyrmling":   "White Dragon",
+  "Young White Dragon":      "White Dragon",
+  "Adult White Dragon":      "White Dragon",
+  "Ancient White Dragon":    "White Dragon",
+
+  "Ogre Zombie":             "Ogre",
+  "Minotaur Skeleton":       "Minotaur Of Baphomet",
+  "Warhorse Skeleton":       "Warhorse",
+
+  "Bandit Captain":          "Bandit",
+  "Guard Captain":           "Guard",
+  "Hobgoblin Captain":       "Hobgoblin Warrior",
+  "Goblin Minion":           "Goblin Warrior",
+  "Goblin Boss":             "Goblin Warrior",
+  "Pirate Captain":          "Pirate",
+  "Tough Boss":              "Tough",
+  "Warrior Veteran":         "Warrior Infantry",
+  "Priest Acolyte":          "Priest",
+  "Cultist Fanatic":         "Cultist",
+
+  "Vampire Spawn":           "Vampire",
+  "Vampire Familiar":        "Vampire",
+  "Mummy Lord":              "Mummy",
+  "Troll Limb":              "Troll"
+}

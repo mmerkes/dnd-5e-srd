@@ -1,0 +1,11 @@
+I want you to write a script to parse a PDF at SRD_CC_v5.2.1.pdf.
+We will start with parsing monster stat blocks, which starts at page 258 and goes to page 343.
+I want to do this iteratively where we first separate the monster stat blocks by different monsters,
+and keep each section as basic text.
+Then, I want to break down each section into different pieces.
+Eventually, I want to convert each monster stat block into JSON so that I can re-use programmatically anywhere.
+Each section of a stat block will need to eventually be broken down further so that we can
+dynamically update and modify stats.
+Show me your plan before you do anything and let me know if you have any clarifying questions.
+I'm fine if you want to use python, Javascript or typescript. If you think anothe language would be better,
+let me know and I'll decide if it's ok.
