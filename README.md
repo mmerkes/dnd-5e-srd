@@ -215,3 +215,5 @@ The 5.2.1 PDF uses a different stat block layout than the commonly documented 5.
 ## License
 
 This project contains no content from the SRD PDF itself.  The SRD 5.2.1 is published under the [Creative Commons Attribution 4.0 International License](https://creativecommons.org/licenses/by/4.0/) by Wizards of the Coast.
+
+The SRD is also available online at [dndbeyond.com/srd](https://www.dndbeyond.com/srd?srsltid=AfmBOooq9F7lNODDh6618nTRL9pgUWdUsmCpjE5ma42ieMuNEX5LaccU).

@@ -1,193 +1,133 @@
-# SRD Monster Parser — Future Work Plan
+# SRD Parser — Roadmap
 
 ## Current state
-- `output/monsters.json` contains 330 monsters, fully parsed.
-- All core stat block fields are typed and structured.
-- 41 monsters have fully structured spellcasting (Phase 4b complete).
-- Multiattack entries have structured `attack_pattern` (Phase 4c complete).
-- All derivable fields removed from JSON; `helpers.py` provides the full set of computed helpers (see CONTEXT.md Computed Fields section). Removed: `ability_scores.*.modifier`, `hit_points.modifier`, `hit_points.average`, `hit_points.formula`, `armor_class.initiative_score`, `challenge.proficiency_bonus`, `skills.*` (flat bonuses → proficiency enums), `senses.passive_perception`, `damage.average`, `damage.formula`.
-- `verify.py` runs proficiency-bonus verification; **5 discrepancies across 4 monsters** — all known SRD anomalies (Phase 5a complete).
-- Phase 1 cross-contamination fixed: `SIZES` regex now handles "Medium or Small" pattern.
-  All 330 boundaries detected; all 5 lycanthropes (including Wereboar) and all NPC archetypes present.
-- `srd_bugs.md` tracks confirmed SRD typos and non-standard DCs.
-- `viewer.py` provides a local web UI for browsing and auditing stat blocks (Phase 5d complete).
-- `uses_per_day` field on actions stores a dict `{"uses": N, ["uses_lair": M], ["each": true]}`.
-- See `CONTEXT.md` for architecture details and known issues.
+- **`output/monsters.json`** — 330 monsters, fully parsed and structured.
+- **`output/spells.json`** — 339 spells, fully parsed and structured.
+- All derivable monster fields removed from JSON; `helpers.py` provides computed helpers.
+- `verify.py` confirms 5 discrepancies across 4 monsters — all known SRD anomalies.
+- `viewer.py` (combined viewer, port 8080) shows 7 tabs: Monsters, Spells, and 5 stubs.
+- Stub pipelines exist for: Magic Items, Feats, Classes, Species, Origins (phases 7–21).
+  Each stub prints "not yet implemented" — no data is parsed yet.
+- `uses_per_day` field on monster actions stores `{"uses": N, ["uses_lair": M], ["each": true]}`.
+- See `CONTEXT.md` for full architecture details and known issues.
 
 ---
 
-## Phase 4 — Fix known parsing gaps
+## Completed work
 
-These are improvements to the existing three scripts, not new features.
+### Monster pipeline ✅
 
-### 4a. Lair actions ✅ RESOLVED — NOT APPLICABLE
-Investigation confirmed: SRD 5.2.1 does NOT include separate lair action stat
-blocks. Lair info appears only as modifiers on legendary resistance uses and
-legendary action use counts. `lair_actions: []` is correct for all monsters.
+**Phase 1 — Raw extraction** (`srd/phases/raw.py`)
+pdfplumber two-column extraction; dynamic column-split detection; footer stripping;
+SIZES regex handles "Medium or Small" compound sizes for NPC archetypes and lycanthropes.
+`--split-only` flag for fast re-splits.
 
-### 4b. Spellcasting action sub-structure ✅ DONE
-`parse_spellcasting()` added to `parse_structured.py`. Called from
-`parse_named_blocks()` for any entry whose name contains "spellcasting".
-41 monsters now have structured spellcasting fields alongside `description`.
-Non-standard entries (Hellfire Spellcasting, Spell Storing) are unaffected.
-Handles: no At Will section, no spell save DC, commas inside spell parens,
-multiple per-day tiers (1/Day, 2/Day, 1/Day Each, etc.).
+**Phase 2 — Section labeling** (`srd/phases/sections.py`)
+Extracts AC, HP, speed, ability scores (with embedded saving throws), skills, senses, CR, etc.
 
-### 4c. Multiattack sub-structure
-The Multiattack description currently stores everything as a string. Parse the attack
-pattern into structured data:
-```json
-{
-  "name": "Multiattack",
-  "attack_pattern": [
-    {"action": "Rend", "count": 3},
-    {"action": "Fire Breath", "count": 1, "optional": true}
-  ]
-}
-```
-This requires recognizing patterns like "makes N X attacks", "can replace one attack with Y", etc.
+**Phase 3 — Structured JSON** (`srd/phases/structured.py`)
+- All stat block fields deep-parsed into typed values
+- Spellcasting sub-structure (`parse_spellcasting()`): 41 monsters
+- Multiattack sub-structure (`parse_multiattack()`): 154/155 monsters (Hydra excepted)
+- Variant tagging: 57 monsters via `data/variant_mapping.json`
+- Source: `"source": "SRD 5.2.1"` on every object
+- `verify.py`: 5 discrepancies across 4 monsters — all confirmed SRD anomalies (see `srd_bugs.md`)
 
-✅ DONE — `parse_multiattack()` added to `parse_structured.py`. 154/155 Multiattack
-entries now have `attack_pattern`. Hydra (variable head count) is the only intentional
-exception. Also fixed a `_CONTINUATION_DESC_RE` filter that was causing three monsters
-(Oni, Salamander, Shambling Mound) to have truncated Multiattack descriptions due to
-PDF line-wrap producing false header lines like "Ray attacks. It can replace…".
+### Spell pipeline ✅
 
-Handles: simple N X attacks, fixed multi-attack combos, any-combination attacks,
-optional replacements (single and A/B choice), bundled uses (including ", uses X twice"),
-and "or it makes N Y attacks" alternatives.
+**Phase 4 — Raw extraction** (`spells/phases/raw.py`)
+Font-aware SC700 char-level extraction for `GillSans-SemiBold-SC700` spell names (two-pass:
+SC700 chars → names, non-SC700 body chars excluding SC700 y-ranges → body text).
+Sort by exact `(top, x0)` — NOT quantized. `_BODY_Y_TOL=2` to keep inline headers separate.
+Carry-over artifact removal: blocks extend to next meta line, next-spell name filtered.
 
-### 4d. Computed modifiers ✅ DONE
-- `ability_scores.*.modifier` removed from JSON output.
-- `hit_points.modifier` removed from JSON output (formula string retains the +N value).
-- `helpers.py` created with `ability_modifier(score)` and `hp_modifier(con_score, dice_count)`.
-- `parse_structured.py` no longer imports `math`; updated docstrings reference helpers.
+**Phase 5 — Section labeling** (`spells/phases/sections.py`)
+Happy-path primary regex `^Label:[ \t]*(.+)$` (note `[ \t]*` not `\s*` — prevents crossing newlines).
+Queue-based fallback for Chill Touch (Cambria-Bold labels on separate lines; values interleaved).
+Handles: `Component:` singular, wrapped casting times, `_split_at_inline_header()` for
+"Cantrip Upgrade." and "Using a Higher-Level Spell Slot." headers.
+
+**Phase 6 — Structured JSON** (`spells/phases/structured.py`)
+Components parsed into `verbal/somatic/material/material_desc`. Duration parsed into
+`concentration` flag + bare `duration`. Description text normalized (soft hyphen join,
+whitespace collapse). `data/spell_corrections.json` patches False Life.
+
+**Combined viewer** (`viewer.py`): stdlib-only HTTP server, port 8080. Monster and spell tabs
+in one page (M/S keyboard shortcut to switch). Monster tab: type/CR filters, parchment stat blocks,
+client-side computed values. Spell tab: level/school/class/concentration filters, spell cards.
 
 ---
 
-## Phase 5 — Data enrichment
+## Open / future work
 
-Features that add value on top of the existing JSON without changing the schema.
+### A. Embedded spell stat blocks (Medium priority)
+3 spells have embedded creature stat blocks in `embedded_stat_blocks` (raw strings):
+Animate Objects, Giant Insect, Summon Dragon.
+Could be deep-parsed using the monster structured parser → `"summoned_creatures": [...]`.
 
-### 5a. Proficiency bonus verification ✅ DONE
-`verify.py` checks attack bonuses, save DCs, spell attack bonuses, spell save DCs,
-and ability saving throws against the standard 5e formulae.
+### B. TypeScript types (Low priority)
+TypeScript interfaces for `monsters.json` and `spells.json` for type-safe frontend use.
 
-Initial results (before Phase 1 fix): 34 discrepancies across 19 monsters.
-Current results (after Phase 1 fix + saving throw refactor): **5 discrepancies across 4 monsters**
-— all intentional SRD action DCs. Young White Dragon INT corrected via `corrections.json`.
-Details in `srd_bugs.md`.
+### C. SQLite loader (Low priority)
+Normalized SQLite DB: `monsters`, `monster_actions`, `monster_damage_rolls`, `spells`, `spell_classes`.
+Enables queries like "find all CR 5–10 undead with darkvision > 60 ft".
 
-**Category A — Phase 1 cross-contamination (14 monsters) ✅ FIXED:**
-Root cause: `SIZES` regex only matched single size words; "Medium or Small" (used by all
-NPC archetypes and lycanthropes) was never detected as a boundary. Fixed by updating `SIZES`
-to `(?:Tiny|...|Gargantuan)(?:\s+or\s+(?:Tiny|...|Gargantuan))?`. Monster count rose
-from 294 → 330. All 14 contaminated monsters are now clean.
+### D. Stub pipelines — implement any of these to add a new content type (Low priority)
+Stubs exist for all 5 types — each has `__init__.py` + 3 phase files that print "not yet implemented".
+The viewer tab and `run_all.py` section flag are already wired up; just implement the phases.
 
-**Category B — Intentional non-standard DCs (4 instances across 4 monsters):**
-Some legendary/recharge action DCs are intentionally lower than what the formula
-would produce (deliberate SRD design choice, not parser errors):
-Ancient White Dragon Freezing Burst (DC 20 vs expected 22),
-Sphinx of Valor Weight of Years (DC 16 vs expected 20),
-Swarm of Ravens Cacophony (DC 10 vs expected 11+),
-Adult Bronze Dragon Thunderclap (DC 17 vs expected 18 — possible SRD typo).
+**Magic Items** (phases 7–9): `magic_items/phases/{raw,sections,structured}.py`
+- Fields to extract: name, type (Armor/Weapon/Wondrous/etc.), rarity, attunement required, description
+- Run with: `python3 run_all.py --magic-items`
+- Output: `output/magic_items.json`
 
-**Category C — Adult Bronze Dragon spell save DC (1 instance):**
-Spell save DC in the Spellcasting block is 17, but CHA 20 (+5) + PB +5 = 18.
-The DC 17 is verbatim from the SRD PDF — either an SRD typo or CHA should be 19.
+**Feats** (phases 10–12): `feats/phases/{raw,sections,structured}.py`
+- Fields to extract: name, prerequisite, description, benefit
+- Run with: `python3 run_all.py --feats`
+- Output: `output/feats.json`
 
-**Category D — Young White Dragon INT saving throw (1 instance):**
-INT saving throw stored as +2; expected -2 (unproficient) or +1 (proficient, PB+3).
-Pre-existing issue: PDF renders this save unsigned, parsed as +2 instead of -2.
+**Classes** (phases 13–15): `classes/phases/{raw,sections,structured}.py`
+- Complex nested structure: class features, subclasses, level tables
+- Run with: `python3 run_all.py --classes`
+- Output: `output/classes.json`
 
-### 5b. Variant tagging ✅ DONE
-`variant_mapping.json` maps 57 monsters to their base creature. Loaded by `parse_structured.py`
-at module level; `variant_of` field added only when a mapping exists. Categories covered:
-dragon age-stages (40 entries across 10 colors), undead templates (Ogre Zombie, Minotaur Skeleton,
-Warhorse Skeleton), rank/boss variants (Bandit/Guard/Hobgoblin/Goblin/Pirate Captains, Tough Boss,
-Warrior Veteran, Priest Acolyte, Cultist Fanatic), and named monster variants
-(Vampire Spawn, Vampire Familiar, Mummy Lord, Troll Limb).
+**Species** (phases 16–18): `species/phases/{raw,sections,structured}.py`
+- Fields to extract: name, size, speed, traits, language
+- Run with: `python3 run_all.py --species`
+- Output: `output/species.json`
 
-### 5c. Source tagging ✅ DONE
-`"source": "SRD 5.2.1"` added to every monster object via `build_monster()` in `parse_structured.py`.
+**Origins / Backgrounds** (phases 19–21): `origins/phases/{raw,sections,structured}.py`
+- Fields to extract: name, ability score increases, skill proficiencies, feat, equipment, description
+- Run with: `python3 run_all.py --origins`
+- Output: `output/origins.json`
 
-### 5d. Stat block viewer ✅ DONE
-`viewer.py` — stdlib-only Python HTTP server, no external dependencies.
-Usage: `python3 viewer.py [port]` → http://localhost:8080
-
-Features:
-- Sidebar: name search, type and CR filters, monster list with CR badges
-- Keyboard arrow navigation through the filtered list
-- Stat block styled after the D&D parchment aesthetic, with all computed values
-  rendered client-side (HP average, initiative score, passive perception, skill
-  bonuses, proficiency bonus, saving throws) — mirrors helpers.py in JS
-- Collapsible raw JSON panel at the bottom of each stat block
-
----
-
-## Phase 6 — API / consumption layer
-
-Build a way to use `monsters.json` programmatically beyond raw JSON reads.
-
-### 6a. TypeScript types
-Generate or write TypeScript interfaces that match the JSON structure:
-```typescript
-interface Monster {
-  name: string;
-  size: Size;
-  type: CreatureType;
-  armor_class: ArmorClass;
-  hit_points: HitPoints;
-  ability_scores: AbilityScores;
-  // ...
-}
-```
-This makes the data usable in a frontend app with full type safety.
-
-### 6b. SQLite loader
-Write a script (`load_db.py` or `load_db.ts`) that loads `monsters.json` into a SQLite
-database with normalized tables:
-- `monsters` — core fields
-- `monster_actions` — one row per action/bonus action/reaction
-- `monster_damage_rolls` — one row per damage roll
-- `monster_ability_scores` — one row per stat
-This enables SQL queries like "find all CR 5-10 undead with darkvision > 60ft".
-
-### 6c. REST API (optional)
-Wrap the SQLite DB in a small FastAPI (Python) or Express (TypeScript) server for use by
-other tools or a web UI.
-
----
-
-## Phase 7 — Extend to other SRD sections
-
-The PDF has other structured content worth parsing with the same pipeline approach.
-
-### 7a. Spells (estimated pages 125–200)
-Similar pipeline: raw extraction → section labeling → structured JSON.
-Key fields: name, level, school, casting_time, range, components, duration, description,
-higher_levels, classes.
-
-### 7b. Magic Items
-Key fields: name, type, rarity, attunement, description.
-
-### 7c. Classes and features
-More complex — nested structure with subclass variants.
+### E. Rules Glossary (Low priority)
+Condition definitions (Blinded, Frightened, etc.) — no stub yet.
 
 ---
 
 ## Suggested next session start
 
-1. Read `CONTEXT.md` and `PLAN.md`
-2. Run `python3 run_all.py --start 3` to confirm clean output (phases 1 and 2 are stable)
-3. Run `python3 verify.py` to confirm 5 discrepancies across 4 monsters (all known SRD anomalies)
-4. Pick up at Phase 6 (TypeScript types or SQLite loader) or Phase 7 (Spells parser)
+1. Read `CONTEXT.md` for architecture details.
+2. Run `python3 run_all.py --start 5` to confirm clean 339-spell output.
+3. Run `python3 verify.py` to confirm 5 discrepancies (all known SRD anomalies).
+4. Run `python3 viewer.py` and verify all 7 tabs load (5 show "not yet implemented" placeholder).
+5. Pick up at A, B, C/D (stub pipelines), or E above.
 
-## Running individual phases
+## Quick reference — running the pipeline
 ```bash
-python3 -m srd.phases.raw            # ~2 min, only needed if PDF or pages change
-python3 -m srd.phases.sections       # fast, re-run when section detection changes
-python3 -m srd.phases.structured     # fast, re-run when field parsers change
-python3 run_all.py --start 2         # skip PDF extraction, run sections + structured
-python3 run_all.py --start 3         # only re-run the final structuring step
+python3 run_all.py                  # all 21 phases (phases 1 + 4 re-read PDF, ~2 min each)
+python3 run_all.py --monsters       # monster phases only (1–3)
+python3 run_all.py --spells         # spell phases only (4–6)
+python3 run_all.py --magic-items    # magic item phases only (7–9, stub)
+python3 run_all.py --feats          # feat phases only (10–12, stub)
+python3 run_all.py --classes        # class phases only (13–15, stub)
+python3 run_all.py --species        # species phases only (16–18, stub)
+python3 run_all.py --origins        # origins phases only (19–21, stub)
+python3 run_all.py --start 2        # monster sections + structured (skip PDF)
+python3 run_all.py --start 3        # monster structured only
+python3 run_all.py --start 5        # spell sections + structured (skip PDF)
+python3 run_all.py --start 6        # spell structured only
+python3 viewer.py                   # combined viewer → http://localhost:8080
+python3 verify.py                   # monster PB verification
 ```
