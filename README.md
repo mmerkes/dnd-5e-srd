@@ -1,5 +1,10 @@
 # SRD 5.2.1 Monster Parser
 
+> **Work in progress — do not depend on this.**
+> The data models and JSON structure will change without notice as more of the SRD is parsed.
+> The project layout is also likely to be restructured. If you build something on top of this
+> output today, expect it to break.
+
 Parses D&D 5e System Reference Document 5.2.1 monster stat blocks from the official PDF into structured JSON.
 
 **Output:** `output/monsters.json` — 330 monsters, all fields typed and structured.
