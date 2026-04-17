@@ -203,6 +203,107 @@ Two JSON files allow targeted overrides when the PDF produces unresolvable value
 
 ---
 
+## TypeScript package
+
+The parsed data is published to npm as `dnd-5e-srd`. It ships TypeScript types generated from `schemas/monster.schema.json` and runtime validation powered by [ajv](https://ajv.js.org).
+
+```bash
+npm install dnd-5e-srd
+```
+
+### Import the monster data
+
+```ts
+import { monsters } from 'dnd-5e-srd';
+import type { Monster } from 'dnd-5e-srd';
+
+// monsters is Monster[] — 330 stat blocks, fully typed
+const aboleth = monsters.find(m => m.name === 'Aboleth');
+console.log(aboleth?.challenge.rating);   // "10"
+console.log(aboleth?.speed);              // { walk: 10, swim: 40 }
+```
+
+### Use the types in your own code
+
+```ts
+import type {
+  Monster,
+  Action,
+  AttackRoll,
+  DamageRoll,
+  Challenge,
+  LegendaryActions,
+} from 'dnd-5e-srd';
+
+function describeDamage(roll: DamageRoll): string {
+  const avg = Math.floor(roll.dice_count * (roll.dice_type / 2 + 0.5) + roll.modifier);
+  return `${roll.dice_count}d${roll.dice_type}+${roll.modifier} ${roll.damage_type} (avg ${avg})`;
+}
+
+function getAttacks(monster: Monster): Action[] {
+  return monster.actions.filter(a => a.attack !== undefined);
+}
+```
+
+### Validate your own data
+
+```ts
+import { validateMonster, validateMonsters, getValidationErrors } from 'dnd-5e-srd';
+
+// Type guard — narrows unknown to Monster
+if (validateMonster(someData)) {
+  console.log(someData.name);  // TypeScript knows this is a Monster
+}
+
+// Collect all errors on a failed object
+const errors = getValidationErrors(someData);
+if (errors) {
+  console.error('Invalid monster:', errors);
+  // e.g. ['/challenge/rating: must be equal to one of the allowed values']
+}
+
+// Validate an entire array
+if (validateMonsters(jsonArray)) {
+  // jsonArray is now Monster[]
+}
+```
+
+### Access the raw JSON Schema
+
+The schema is exported for use with other validators, documentation generators, or code generators for other languages.
+
+```ts
+import { MONSTER_SCHEMA } from 'dnd-5e-srd';
+
+// MONSTER_SCHEMA is the full JSON Schema draft-07 object.
+// The canonical source lives at schemas/monster.schema.json in this repo.
+console.log(MONSTER_SCHEMA.title);               // "Monster"
+console.log(Object.keys(MONSTER_SCHEMA.definitions));
+// ['ArmorClass', 'HitPoints', 'Speed', 'AbilityScoreEntry', ...]
+```
+
+### Filtering examples
+
+```ts
+import { monsters } from 'dnd-5e-srd';
+
+// All CR 5–10 undead
+const midUndead = monsters.filter(
+  m => m.type === 'Undead' && ['5','6','7','8','9','10'].includes(m.challenge.rating)
+);
+
+// Monsters with darkvision > 60 ft
+const goodDarkvision = monsters.filter(m => (m.senses.darkvision ?? 0) > 60);
+
+// All legendary monsters
+const legendary = monsters.filter(m => m.legendary_actions.actions.length > 0);
+
+// Variant monsters (e.g. all dragon age-stages)
+const variants = monsters.filter(m => m.variant_of !== undefined);
+```
+
+---
+
 ## SRD format notes (5.2.1 vs 5.1)
 
 The 5.2.1 PDF uses a different stat block layout than the commonly documented 5.1 format:

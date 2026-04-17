@@ -55,7 +55,7 @@ META_RE = re.compile(
 
 LABELED_FIELDS: dict[str, re.Pattern] = {
     # "AC 17 Initiative +7 (17)"  — we capture everything after "AC "
-    # parse_structured.py later splits this into value + initiative_bonus.
+    # parse_structured.py splits this into armor_class.value and top-level initiative_bonus.
     "ac_line":        re.compile(r"^AC (.+)$",              re.MULTILINE),
     # "HP 150 (20d10 + 40)"
     "hp_line":        re.compile(r"^HP (.+)$",              re.MULTILINE),

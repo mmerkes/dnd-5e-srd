@@ -57,19 +57,20 @@ _CORRECTIONS: dict = (
 
 def parse_ac_line(raw: str) -> dict:
     """
-    'AC 17 Initiative +7 (17)'
-        → {"value": 17, "initiative_bonus": 7}
-    'AC 22'
-        → {"value": 22}
-    Parenthetical armour type (5.1 style) is also handled for robustness:
-    'AC 17 (natural armor)'
-        → {"value": 17, "type": "natural armor"}
+    'AC 17 Initiative +7 (17)'  → {"value": 17, "initiative_bonus": 7}
+    'AC 9 Initiative −1 (9)'   → {"value": 9,  "initiative_bonus": -1}
+    'AC 22'                     → {"value": 22}
 
-    initiative_score is intentionally omitted — use helpers.initiative_score(initiative_bonus).
+    Returns only the raw parsed values; the caller unpacks them into separate
+    top-level fields ("armor_class" and "initiative_bonus") on the monster object.
+    initiative_score is intentionally omitted — use helpers.initiative_score().
     """
     if not raw:
         return {}
     raw = raw.strip()
+    # Normalise Unicode minus (−) and en-dash to ASCII hyphen so the signed-
+    # integer patterns below match negative initiative bonuses such as "−1".
+    raw = raw.replace("\u2212", "-").replace("\u2013", "-")
 
     result: dict = {}
 
@@ -971,7 +972,8 @@ def build_monster(sections: dict) -> dict:
         "type":                   sections.get("type", ""),
         "tags":                   [t.strip() for t in sections.get("type_tags", "").split(",") if t.strip()],
         "alignment":              sections.get("alignment", ""),
-        "armor_class":            parse_ac_line(sections.get("ac_line", "")),
+        "armor_class":            {"value": (_ac := parse_ac_line(sections.get("ac_line", ""))).get("value")},
+        "initiative_bonus":       _ac.get("initiative_bonus"),
         "hit_points":             parse_hit_points(sections.get("hp_line", "")),
         "speed":                  parse_speed(sections.get("speed", "")),
         "ability_scores":         ability_scores,

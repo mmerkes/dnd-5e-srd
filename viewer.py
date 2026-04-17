@@ -280,8 +280,8 @@ function renderMonster(m) {
   // AC / Init / HP / Speed
   const ac = m.armor_class || {};
   let acStr = `<b>AC</b> ${ac.value ?? "?"}`;
-  if (ac.initiative_bonus !== undefined)
-    acStr += ` &nbsp;·&nbsp; <b>Initiative</b> ${fmtMod(ac.initiative_bonus)} (${10+ac.initiative_bonus})`;
+  if (m.initiative_bonus !== undefined)
+    acStr += ` &nbsp;·&nbsp; <b>Initiative</b> ${fmtMod(m.initiative_bonus)} (${10+m.initiative_bonus})`;
   h += `<div class="pl">${acStr}</div>`;
 
   const hp = m.hit_points || {};

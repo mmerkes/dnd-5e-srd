@@ -1,0 +1,476 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Monster",
+  "description": "A D&D 5e SRD 5.2.1 monster stat block.",
+  "type": "object",
+  "required": [
+    "source",
+    "name",
+    "flavor_text",
+    "size",
+    "type",
+    "tags",
+    "alignment",
+    "armor_class",
+    "initiative_bonus",
+    "hit_points",
+    "speed",
+    "ability_scores",
+    "skills",
+    "damage_vulnerabilities",
+    "damage_resistances",
+    "damage_immunities",
+    "condition_immunities",
+    "senses",
+    "languages",
+    "challenge",
+    "special_abilities",
+    "actions",
+    "bonus_actions",
+    "reactions",
+    "legendary_actions",
+    "lair_actions"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "source": {
+      "type": "string",
+      "description": "Source book identifier, e.g. \"SRD 5.2.1\"."
+    },
+    "name": { "type": "string" },
+    "flavor_text": {
+      "type": "string",
+      "description": "Optional flavor/lore text (empty string when absent)."
+    },
+    "size": {
+      "type": "string",
+      "enum": ["", "Tiny", "Small", "Medium", "Large", "Huge", "Gargantuan"],
+      "description": "Empty string for monsters whose size is not listed in the SRD."
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "",
+        "Aberration",
+        "Beast",
+        "Celestial",
+        "Construct",
+        "Dragon",
+        "Elemental",
+        "Fey",
+        "Fiend",
+        "Giant",
+        "Monstrosity",
+        "Ooze",
+        "Plant",
+        "Swarm of Tiny Beasts",
+        "Swarm of Tiny Undead",
+        "Undead"
+      ]
+    },
+    "tags": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Creature subtypes in parentheses, e.g. [\"devil\"]."
+    },
+    "alignment": {
+      "type": "string",
+      "enum": [
+        "",
+        "Chaotic Evil",
+        "Chaotic Good",
+        "Chaotic Neutral",
+        "Lawful Evil",
+        "Lawful Good",
+        "Lawful Neutral",
+        "Neutral",
+        "Neutral Evil",
+        "Neutral Good",
+        "Unaligned"
+      ]
+    },
+    "armor_class": { "$ref": "#/definitions/ArmorClass" },
+    "initiative_bonus": {
+      "type": "integer",
+      "description": "Initiative modifier. Negative for low-DEX monsters."
+    },
+    "hit_points": { "$ref": "#/definitions/HitPoints" },
+    "speed": { "$ref": "#/definitions/Speed" },
+    "ability_scores": { "$ref": "#/definitions/AbilityScores" },
+    "skills": { "$ref": "#/definitions/Skills" },
+    "damage_vulnerabilities": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "damage_resistances": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "damage_immunities": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "condition_immunities": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "senses": { "$ref": "#/definitions/Senses" },
+    "languages": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "challenge": { "$ref": "#/definitions/Challenge" },
+    "special_abilities": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/SpecialAbility" }
+    },
+    "actions": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/Action" }
+    },
+    "bonus_actions": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/Action" }
+    },
+    "reactions": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/Action" }
+    },
+    "legendary_actions": { "$ref": "#/definitions/LegendaryActions" },
+    "lair_actions": {
+      "type": "array",
+      "items": {},
+      "description": "Always empty in SRD 5.2.1."
+    },
+    "variant_of": {
+      "type": "string",
+      "description": "Base monster name for variant stat blocks (e.g. \"Black Dragon\"). Present on 57/330 monsters."
+    }
+  },
+  "definitions": {
+    "ArmorClass": {
+      "title": "ArmorClass",
+      "type": "object",
+      "required": ["value"],
+      "additionalProperties": false,
+      "properties": {
+        "value": { "type": "integer" }
+      }
+    },
+    "HitPoints": {
+      "title": "HitPoints",
+      "type": "object",
+      "required": ["dice_count", "dice_type"],
+      "additionalProperties": false,
+      "properties": {
+        "dice_count": { "type": "integer" },
+        "dice_type": {
+          "type": "integer",
+          "description": "Hit die size (e.g. 8 for d8)."
+        }
+      }
+    },
+    "Speed": {
+      "title": "Speed",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "walk": { "type": "integer" },
+        "swim": { "type": "integer" },
+        "fly": { "type": "integer" },
+        "burrow": { "type": "integer" },
+        "climb": { "type": "integer" },
+        "hover": {
+          "type": "boolean",
+          "description": "True when the creature hovers (cannot fall). Always paired with fly speed."
+        }
+      }
+    },
+    "AbilityScoreEntry": {
+      "title": "AbilityScoreEntry",
+      "type": "object",
+      "required": ["score"],
+      "additionalProperties": false,
+      "properties": {
+        "score": { "type": "integer" },
+        "save_proficiency": {
+          "type": "string",
+          "enum": ["proficient"],
+          "description": "Present only when the monster has saving throw proficiency for this ability."
+        }
+      }
+    },
+    "AbilityScores": {
+      "title": "AbilityScores",
+      "type": "object",
+      "required": ["str", "dex", "con", "int", "wis", "cha"],
+      "additionalProperties": false,
+      "properties": {
+        "str": { "$ref": "#/definitions/AbilityScoreEntry" },
+        "dex": { "$ref": "#/definitions/AbilityScoreEntry" },
+        "con": { "$ref": "#/definitions/AbilityScoreEntry" },
+        "int": { "$ref": "#/definitions/AbilityScoreEntry" },
+        "wis": { "$ref": "#/definitions/AbilityScoreEntry" },
+        "cha": { "$ref": "#/definitions/AbilityScoreEntry" }
+      }
+    },
+    "Skills": {
+      "title": "Skills",
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "enum": ["proficient", "expert"]
+      },
+      "description": "Map of skill name to proficiency level. Only skills with explicit proficiency are listed."
+    },
+    "Senses": {
+      "title": "Senses",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "blindsight": { "type": "integer", "description": "Range in feet." },
+        "darkvision": { "type": "integer", "description": "Range in feet." },
+        "tremorsense": { "type": "integer", "description": "Range in feet." },
+        "truesight": { "type": "integer", "description": "Range in feet." }
+      }
+    },
+    "Challenge": {
+      "title": "Challenge",
+      "type": "object",
+      "required": ["rating", "xp"],
+      "additionalProperties": false,
+      "properties": {
+        "rating": {
+          "type": "string",
+          "enum": [
+            "0", "1/8", "1/4", "1/2",
+            "1", "2", "3", "4", "5", "6", "7", "8", "9", "10",
+            "11", "12", "13", "14", "15", "16", "17",
+            "19", "20", "21", "22", "23", "24", "30"
+          ],
+          "description": "Challenge Rating as a string to preserve fractions (\"1/4\", \"1/2\"). No CR 18 or 25–29 exist in the SRD."
+        },
+        "xp": { "type": "integer" },
+        "xp_lair": {
+          "type": "integer",
+          "description": "XP awarded when fought in lair. Present on 27 monsters."
+        }
+      }
+    },
+    "DamageRoll": {
+      "title": "DamageRoll",
+      "type": "object",
+      "required": ["dice_count", "dice_type", "modifier", "damage_type"],
+      "additionalProperties": false,
+      "properties": {
+        "dice_count": { "type": "integer" },
+        "dice_type": { "type": "integer", "description": "Die size (e.g. 6 for d6)." },
+        "modifier": { "type": "integer", "description": "Flat modifier added after rolling (may be 0 or negative)." },
+        "damage_type": {
+          "type": "string",
+          "enum": [
+            "acid", "bludgeoning", "cold", "fire", "force",
+            "lightning", "necrotic", "piercing", "poison",
+            "psychic", "radiant", "slashing", "thunder"
+          ]
+        }
+      }
+    },
+    "AttackRoll": {
+      "title": "AttackRoll",
+      "type": "object",
+      "required": ["type", "bonus"],
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "melee_weapon_attack",
+            "ranged_weapon_attack",
+            "melee_or_ranged_weapon_attack"
+          ]
+        },
+        "bonus": { "type": "integer", "description": "Attack roll bonus (to-hit)." },
+        "reach": { "type": "integer", "description": "Melee reach in feet." },
+        "range_normal": { "type": "integer", "description": "Normal ranged attack range in feet." },
+        "range_long": { "type": "integer", "description": "Long ranged attack range in feet (disadvantage beyond normal range)." }
+      }
+    },
+    "SavingThrow": {
+      "title": "SavingThrow",
+      "type": "object",
+      "required": ["dc", "stat"],
+      "additionalProperties": false,
+      "properties": {
+        "dc": { "type": "integer" },
+        "stat": {
+          "type": "string",
+          "enum": ["str", "dex", "con", "int", "wis", "cha"]
+        }
+      }
+    },
+    "UsesPerDay": {
+      "title": "UsesPerDay",
+      "type": "object",
+      "required": ["uses"],
+      "additionalProperties": false,
+      "properties": {
+        "uses": { "type": "integer" },
+        "uses_lair": {
+          "type": "integer",
+          "description": "Uses available when in lair."
+        },
+        "each": {
+          "type": "boolean",
+          "description": "True for \"N/Day Each\" — the limit applies per listed ability, not total."
+        }
+      }
+    },
+    "AttackPattern": {
+      "title": "AttackPattern",
+      "description": "One element of a multiattack sequence. Fields present depend on the pattern type:\n- Single attack:       {action, count}\n- Optional single:     {action, count, optional}\n- Alternative opt:     {action, count, optional, alternative}\n- Choose one:          {actions, use}\n- Any combination:     {actions, count, any_combination}\n- Optional choice:     {options, count, optional}",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "action": {
+          "type": "string",
+          "description": "Name of a single attack to use."
+        },
+        "actions": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Names of the attacks in a choice or any-combination set."
+        },
+        "options": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Names of attacks to choose one from (optional choice pattern)."
+        },
+        "count": {
+          "type": "integer",
+          "description": "Number of times to use this attack (or max in any-combination)."
+        },
+        "optional": {
+          "type": "boolean",
+          "description": "True when this attack may be skipped."
+        },
+        "alternative": {
+          "type": "boolean",
+          "description": "True when this is an alternative to a preceding attack (\"or\" pattern)."
+        },
+        "any_combination": {
+          "type": "boolean",
+          "description": "True when any combination of the listed attacks may be used up to count."
+        },
+        "use": {
+          "type": "boolean",
+          "description": "True for the legacy choose-one pattern ({actions, use})."
+        }
+      }
+    },
+    "SpellList": {
+      "title": "SpellList",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "at_will": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Spells castable at will."
+        },
+        "per_day": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "description": "Map of uses-per-day count (as string key, e.g. \"1\", \"3\") to spell names."
+        }
+      }
+    },
+    "SpecialAbility": {
+      "title": "SpecialAbility",
+      "description": "A passive trait or always-on ability listed in the Traits section.",
+      "type": "object",
+      "required": ["name", "description"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "save": { "$ref": "#/definitions/SavingThrow" },
+        "uses_per_day": { "$ref": "#/definitions/UsesPerDay" }
+      }
+    },
+    "Action": {
+      "title": "Action",
+      "description": "An action, bonus action, or reaction available to the monster.",
+      "type": "object",
+      "required": ["name", "description"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "attack": { "$ref": "#/definitions/AttackRoll" },
+        "attack_pattern": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/AttackPattern" },
+          "description": "Parsed multiattack sequence. Present on the Multiattack action."
+        },
+        "damage": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/DamageRoll" }
+        },
+        "save": { "$ref": "#/definitions/SavingThrow" },
+        "uses_per_day": { "$ref": "#/definitions/UsesPerDay" },
+        "recharge": {
+          "type": "string",
+          "description": "Recharge range as a string, e.g. \"5\u20136\" or \"6\"."
+        },
+        "spells": { "$ref": "#/definitions/SpellList" },
+        "spellcasting_ability": {
+          "type": "string",
+          "enum": ["charisma", "wisdom", "intelligence"]
+        },
+        "spell_save_dc": { "type": "integer" },
+        "spell_attack_bonus": { "type": "integer" }
+      }
+    },
+    "LegendaryActionEntry": {
+      "title": "LegendaryActionEntry",
+      "description": "A single legendary action option.",
+      "type": "object",
+      "required": ["name", "description"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "save": { "$ref": "#/definitions/SavingThrow" }
+      }
+    },
+    "LegendaryActions": {
+      "title": "LegendaryActions",
+      "description": "Container for legendary action rules and options. Present on all monsters; actions array is empty when unused.",
+      "type": "object",
+      "required": ["description", "actions"],
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "type": "string",
+          "description": "Full legendary action rules text. Empty string when monster has no legendary actions."
+        },
+        "actions": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/LegendaryActionEntry" }
+        },
+        "uses": {
+          "type": "integer",
+          "description": "Number of legendary action uses per round."
+        },
+        "uses_lair": {
+          "type": "integer",
+          "description": "Legendary action uses per round when in lair."
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "name": "dnd-5e-srd",
+  "version": "0.1.0",
+  "description": "D&D 5e SRD 5.2.1 data with TypeScript types and runtime validation",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist/"
+  ],
+  "scripts": {
+    "codegen": "node codegen.mjs",
+    "build": "tsc && node -e \"require('fs').cpSync('src/data', 'dist/data', {recursive:true})\"",
+    "prepublishOnly": "npm run codegen && npm run build"
+  },
+  "keywords": [
+    "dnd",
+    "d&d",
+    "5e",
+    "srd",
+    "monsters",
+    "dungeons-and-dragons"
+  ],
+  "license": "CC-BY-4.0",
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "json-schema-to-typescript": "^15.0.0",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "ajv": "^8.17.1"
+  }
+}
